@@ -103,9 +103,12 @@ pipeline {
         stage('Trivy Image Scan') {
             steps {
                 sh '''
+                 docker save -o api-devops.tar $DOCKER_IMAGE
+
                  docker run --rm \
                     -v $(pwd):/app \
                     aquasec/trivy image \
+                    --input /app/api-devops.tar \
                     --format template \
                     --template "@contrib/html.tpl" \
                     -o /app/trivy-report-image.html \
