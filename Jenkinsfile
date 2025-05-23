@@ -37,14 +37,9 @@ pipeline {
         stage('SAST - Semgrep') {
             steps {
                withCredentials([string(credentialsId: 'SEMGREP_TOKEN', variable: 'SEMGREP_TOKEN')]) {
-               sh '''
+               sh '''    
                docker run --rm \
                    -e SEMGREP_TOKEN=$SEMGREP_TOKEN \
-                   -v $(pwd):/src \
-                   -v $HOME/.semgrep:/home/semgrep/.semgrep \
-                   returntocorp/semgrep semgrep login
-
-               docker run --rm \
                    -v $(pwd):/src \
                    -v $HOME/.semgrep:/home/semgrep/.semgrep \
                    returntocorp/semgrep semgrep \
