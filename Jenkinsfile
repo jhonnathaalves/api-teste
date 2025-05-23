@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     tools {
-        maven 'MAVEN_3.9' 
-        jdk 'JAVA_17'     
+        maven 'MAVEN_3.9'
+        jdk 'JAVA_17'
     }
 
-    environment {       
+    environment {
         DOCKER_IMAGE = "api-devops:${BUILD_NUMBER}"
     }
 
@@ -24,11 +24,11 @@ pipeline {
         }
 
         stage('SonarQube Scan') {
-            steps {                
+            steps {
                 withSonarQubeEnv('sonarqube-server') {
                     sh '''
-                    mvn sonar:sonar \\
-                        -Dsonar.projectKey=api-devops 
+                    mvn sonar:sonar \
+                        -Dsonar.projectKey=api-devops
                     '''
                 }
             }
@@ -37,10 +37,11 @@ pipeline {
         stage('SAST - Semgrep') {
             steps {
                 sh '''
-                docker run --rm \\
-                    -v $(pwd):/src \\
-                    returntocorp/semgrep semgrep \\
-                    --config=auto /src
+                docker run --rm \
+                    -v $(pwd):/src \
+                    returntocorp/semgrep semgrep \
+                    --config=auto /src \
+                    --json > semgrep-report.json
                 '''
             }
         }
@@ -48,9 +49,10 @@ pipeline {
         stage('Secrets Scan - Gitleaks') {
             steps {
                 sh '''
-                docker run --rm -v $(pwd):/repo zricethezav/gitleaks:latest detect \\
-                    --source=/repo --no-git \\
-                    --report-format=json \\
+                docker run --rm \
+                    -v $(pwd):/repo zricethezav/gitleaks:latest detect \
+                    --source=/repo --no-git \
+                    --report-format=json \
                     --report-path=gitleaks-report.json
                 '''
             }
@@ -59,8 +61,13 @@ pipeline {
         stage('SCA - Trivy (File System)') {
             steps {
                 sh '''
-                docker run --rm -v $(pwd):/app aquasec/trivy fs /app \\
-                    --exit-code 0 --severity HIGH,CRITICAL
+                docker run --rm \
+                    -v $(pwd):/app \
+                    aquasec/trivy fs /app \
+                    --exit-code 0 \
+                    --severity HIGH,CRITICAL \
+                    --format json \
+                    --output trivy-fs-report.json
                 '''
             }
         }
@@ -74,9 +81,14 @@ pipeline {
         stage('Trivy Image Scan') {
             steps {
                 sh '''
-                docker run --rm \\
-                    -v /var/run/docker.sock:/var/run/docker.sock \\
-                    aquasec/trivy image $DOCKER_IMAGE
+                docker run --rm \
+                    -v /var/run/docker.sock:/var/run/docker.sock \
+                    -v $(pwd):/root/reports \
+                    aquasec/trivy image $DOCKER_IMAGE \
+                    --exit-code 0 \
+                    --severity HIGH,CRITICAL \
+                    --format json \
+                    --output /root/reports/trivy-image-report.json
                 '''
             }
         }
@@ -85,10 +97,15 @@ pipeline {
     post {
         always {
             junit '**/target/surefire-reports/*.xml'
+
             archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
+
+            // 📝 Arquivos de relatório de segurança
+            archiveArtifacts artifacts: '**/*-report.json', allowEmptyArchive: true
         }
+
         failure {
-            echo 'Pipeline failed. Check reports and fix issues.'
+            echo '❌ Pipeline failed. Check reports and fix issues.'
         }
     }
 }
