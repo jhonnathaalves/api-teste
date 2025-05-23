@@ -2,13 +2,12 @@ pipeline {
     agent any
 
     tools {
-        maven 'MAVEN_3.9'
-        jdk 'JAVA_17'
+        maven 'MAVEN_3.9' 
+        jdk 'JAVA_17'     
     }
 
-    environment {
-        SONARQUBE_ENV = credentials('sonarqube-token')
-        DOCKER_IMAGE = "meuapp:${BUILD_NUMBER}"
+    environment {       
+        DOCKER_IMAGE = "api-devops:${BUILD_NUMBER}"
     }
 
     stages {
@@ -25,13 +24,13 @@ pipeline {
         }
 
         stage('SonarQube Scan') {
-            steps {
+            steps {                
                 withSonarQubeEnv('sonarqube-server') {
                     sh '''
-                    mvn sonar:sonar \
-                        -Dsonar.projectKey=meu-app \
-                        -Dsonar.host.url=$SONAR_HOST_URL \
-                        -Dsonar.login=$SONARQUBE_ENV
+                    mvn sonar:sonar \\
+                        -Dsonar.projectKey=meu-app \\
+                        -Dsonar.host.url=$SONAR_HOST_URL \\
+                        -Dsonar.token=$SONAR_TOKEN
                     '''
                 }
             }
@@ -40,9 +39,9 @@ pipeline {
         stage('SAST - Semgrep') {
             steps {
                 sh '''
-                docker run --rm \
-                    -v $(pwd):/src \
-                    returntocorp/semgrep semgrep \
+                docker run --rm \\
+                    -v $(pwd):/src \\
+                    returntocorp/semgrep semgrep \\
                     --config=auto /src
                 '''
             }
@@ -51,9 +50,9 @@ pipeline {
         stage('Secrets Scan - Gitleaks') {
             steps {
                 sh '''
-                docker run --rm -v $(pwd):/repo zricethezav/gitleaks:latest detect \
-                    --source=/repo --no-git \
-                    --report-format=json \
+                docker run --rm -v $(pwd):/repo zricethezav/gitleaks:latest detect \\
+                    --source=/repo --no-git \\
+                    --report-format=json \\
                     --report-path=gitleaks-report.json
                 '''
             }
@@ -62,7 +61,7 @@ pipeline {
         stage('SCA - Trivy (File System)') {
             steps {
                 sh '''
-                docker run --rm -v $(pwd):/app aquasec/trivy fs /app \
+                docker run --rm -v $(pwd):/app aquasec/trivy fs /app \\
                     --exit-code 0 --severity HIGH,CRITICAL
                 '''
             }
@@ -77,8 +76,8 @@ pipeline {
         stage('Trivy Image Scan') {
             steps {
                 sh '''
-                docker run --rm \
-                    -v /var/run/docker.sock:/var/run/docker.sock \
+                docker run --rm \\
+                    -v /var/run/docker.sock:/var/run/docker.sock \\
                     aquasec/trivy image $DOCKER_IMAGE
                 '''
             }
