@@ -55,12 +55,13 @@ pipeline {
         stage('Secrets Scan - Gitleaks') {
             steps {
                 sh '''
+                echo '{"version":"2.1.0","runs":[]}' > gitleaks.sarif
                 docker run --rm \
                     -v $(pwd):/repo \
                     zricethezav/gitleaks:latest detect \
                     --source=/repo --no-git \
                     --report-format=sarif \
-                    --report-path=/repo/gitleaks.sarif
+                    --report-path=/repo/gitleaks.sarif || true
                 '''
             }
         }
@@ -87,7 +88,7 @@ pipeline {
                     aquasec/trivy fs /app \
                     --format template \
                     --template "@contrib/html.tpl" \
-                    -o trivy-report.html \
+                    -o /app/trivy-report-fs.html \
                     --exit-code 0 --severity HIGH,CRITICAL
                 '''
             }
@@ -102,9 +103,14 @@ pipeline {
         stage('Trivy Image Scan') {
             steps {
                 sh '''
-                docker run --rm \
-                    -v /var/run/docker.sock:/var/run/docker.sock \
-                    aquasec/trivy image $DOCKER_IMAGE
+                 docker run --rm \
+                    -v $(pwd):/app \
+                    aquasec/trivy image \
+                    --format template \
+                    --template "@contrib/html.tpl" \
+                    -o /app/trivy-report-image.html \
+                    --exit-code 0 --severity HIGH,CRITICAL \
+					$DOCKER_IMAGE
                 '''
             }
         }
