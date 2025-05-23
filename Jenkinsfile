@@ -36,13 +36,21 @@ pipeline {
 
         stage('SAST - Semgrep') {
             steps {
-                sh '''
-                docker run --rm \
-                    -v $(pwd):/src \
-                    returntocorp/semgrep semgrep \
-                    --config=auto /src \
-                    --sarif > semgrep.sarif
-                '''
+               withCredentials([string(credentialsId: 'SEMGREP_TOKEN', variable: 'SEMGREP_TOKEN')]) {
+               sh '''
+               docker run --rm \
+                   -v $(pwd):/src \
+                   -v $HOME/.semgrep:/home/semgrep/.semgrep \
+                   returntocorp/semgrep semgrep login --token $SEMGREP_TOKEN
+
+               docker run --rm \
+                   -v $(pwd):/src \
+                   -v $HOME/.semgrep:/home/semgrep/.semgrep \
+                   returntocorp/semgrep semgrep \
+                   --config=p/owasp-top-ten /src \
+                   --sarif --output=/src/semgrep.sarif
+               '''
+               }
             }
         }
 
@@ -54,7 +62,7 @@ pipeline {
                     zricethezav/gitleaks:latest detect \
                     --source=/repo --no-git \
                     --report-format=sarif \
-                    --report-path=gitleaks.sarif
+                    --report-path=/repo/gitleaks.sarif
                 '''
             }
         }
