@@ -19,7 +19,9 @@ pipeline {
 
         stage('Build & Unit Tests') {
             steps {
-                sh 'mvn clean verify'
+                sh '''
+                    pwd
+                    mvn clean verify'''
             }
         }
 
