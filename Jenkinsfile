@@ -41,7 +41,7 @@ pipeline {
                     -v $(pwd):/src \
                     returntocorp/semgrep semgrep \
                     --config=auto /src \
-                    --json > semgrep-report.json
+                    --sarif > semgrep.sarif
                 '''
             }
         }
@@ -50,10 +50,25 @@ pipeline {
             steps {
                 sh '''
                 docker run --rm \
-                    -v $(pwd):/repo zricethezav/gitleaks:latest detect \
+                    -v $(pwd):/repo \
+                    zricethezav/gitleaks:latest detect \
                     --source=/repo --no-git \
-                    --report-format=json \
-                    --report-path=gitleaks-report.json
+                    --report-format=sarif \
+                    --report-path=gitleaks.sarif
+                '''
+            }
+        }
+
+        stage('Convert SARIF to HTML') {
+            steps {
+                sh '''
+                docker run --rm -v $(pwd):/workdir sarif-html:latest \
+                    --input /workdir/semgrep.sarif \
+                    --output /workdir/semgrep-report.html
+
+                docker run --rm -v $(pwd):/workdir sarif-html:latest \
+                    --input /workdir/gitleaks.sarif \
+                    --output /workdir/gitleaks-report.html
                 '''
             }
         }
@@ -64,10 +79,10 @@ pipeline {
                 docker run --rm \
                     -v $(pwd):/app \
                     aquasec/trivy fs /app \
-                    --exit-code 0 \
-                    --severity HIGH,CRITICAL \
-                    --format json \
-                    --output trivy-fs-report.json
+                    --format template \
+                    --template "@contrib/html.tpl" \
+                    -o trivy-report.html \
+                    --exit-code 0 --severity HIGH,CRITICAL
                 '''
             }
         }
@@ -83,13 +98,14 @@ pipeline {
                 sh '''
                 docker run --rm \
                     -v /var/run/docker.sock:/var/run/docker.sock \
-                    -v $(pwd):/root/reports \
-                    aquasec/trivy image $DOCKER_IMAGE \
-                    --exit-code 0 \
-                    --severity HIGH,CRITICAL \
-                    --format json \
-                    --output /root/reports/trivy-image-report.json
+                    aquasec/trivy image $DOCKER_IMAGE
                 '''
+            }
+        }
+
+        stage('Quality Gate - SonarQube') {
+            steps {
+                waitForQualityGate abortPipeline: true
             }
         }
     }
@@ -97,15 +113,12 @@ pipeline {
     post {
         always {
             junit '**/target/surefire-reports/*.xml'
-
             archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
-
-            // 📝 Arquivos de relatório de segurança
-            archiveArtifacts artifacts: '**/*-report.json', allowEmptyArchive: true
+            archiveArtifacts artifacts: '*.html', allowEmptyArchive: true
         }
 
         failure {
-            echo '❌ Pipeline failed. Check reports and fix issues.'
+            echo 'Pipeline failed. Check the security and quality reports.'
         }
     }
 }
