@@ -28,9 +28,7 @@ pipeline {
                 withSonarQubeEnv('sonarqube-server') {
                     sh '''
                     mvn sonar:sonar \\
-                        -Dsonar.projectKey=meu-app \\
-                        -Dsonar.host.url=$SONAR_HOST_URL \\
-                        -Dsonar.token=$SONAR_TOKEN
+                        -Dsonar.projectKey=api-devops 
                     '''
                 }
             }
