@@ -39,7 +39,7 @@ pipeline {
                withCredentials([string(credentialsId: 'SEMGREP_TOKEN', variable: 'SEMGREP_TOKEN')]) {
                sh '''    
                docker run --rm \
-                   -e SEMGREP_TOKEN=$SEMGREP_TOKEN \
+                   -e SEMGREP_APP_TOKEN=$SEMGREP_TOKEN \
                    -v $(pwd):/src \
                    -v $HOME/.semgrep:/home/semgrep/.semgrep \
                    returntocorp/semgrep semgrep \
