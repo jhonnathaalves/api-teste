@@ -67,12 +67,12 @@ pipeline {
             steps {
                 sh '''
                 docker run --rm -v $(pwd):/workdir sarif-html:latest \
-                    --input /workdir/semgrep.sarif \
-                    --output /workdir/semgrep-report.html
+                    /workdir/semgrep.sarif \
+                    /workdir/semgrep-report.html
 
                 docker run --rm -v $(pwd):/workdir sarif-html:latest \
-                    --input /workdir/gitleaks.sarif \
-                    --output /workdir/gitleaks-report.html
+                    /workdir/gitleaks.sarif \
+                    /workdir/gitleaks-report.html
                 '''
             }
         }
