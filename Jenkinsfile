@@ -74,7 +74,7 @@ pipeline {
                     -v $(pwd):/app \
                     aquasec/trivy fs /app \
                     --format sarif \
-                    -o /app/trivy-reports/trivy-report-fs.sarif
+                    -o "/app/trivy-report-fs.sarif"
                     --exit-code 0 --severity HIGH,CRITICAL
                 '''
             }
@@ -97,7 +97,7 @@ pipeline {
                     -e DOCKER_HOST=unix:///var/run/docker.sock \
                     aquasec/trivy image \
                     --format sarif \
-                    -o /app/trivy-reports/trivy-report-image.sarif \
+                    -o "/app/trivy-report-image.sarif" \
                     --exit-code 0 --severity HIGH,CRITICAL \
                     "$DOCKER_IMAGE"
                 '''
@@ -116,8 +116,8 @@ pipeline {
                 tools: [
                   sarif(id: 'semgrep-sarif', name: 'Semgrep Findings', pattern: 'semgrep.sarif'),
                   sarif(id: 'gitleaks-sarif', name: 'Gitleaks Findings', pattern: 'gitleaks.sarif'),
-                  sarif(id: 'trivy-fs-sarif', name: 'Trivy fs Scan', pattern: 'trivy-reports/trivy-report-fs.sarif'),
-                  sarif(id: 'trivy-image-sarif', name: 'Trivy Image Scan', pattern: 'trivy-reports/trivy-report-image.sarif')                  
+                  sarif(id: 'trivy-fs-sarif', name: 'Trivy fs Scan', pattern: 'trivy-report-fs.sarif'),
+                  sarif(id: 'trivy-image-sarif', name: 'Trivy Image Scan', pattern: 'trivy-report-image.sarif')                  
                 ]
               )
             }
