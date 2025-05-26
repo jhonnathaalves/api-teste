@@ -98,6 +98,7 @@ pipeline {
                     --exit-code 0 \
                     --severity HIGH,CRITICAL
 
+                curl -sSL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl -o html.tpl
                 trivy image \
                     --format template \
                     --template "@contrib/html.tpl" \
