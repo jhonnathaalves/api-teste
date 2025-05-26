@@ -40,7 +40,7 @@ pipeline {
             steps {
                withCredentials([string(credentialsId: 'SEMGREP_TOKEN', variable: 'SEMGREP_TOKEN')]) {
                sh '''    
-               sudo docker run --rm \
+               docker run --rm \
                    -e SEMGREP_APP_TOKEN=$SEMGREP_TOKEN \
                    -v $(pwd):/src \
                    -v $HOME/.semgrep:/home/semgrep/.semgrep \
@@ -69,7 +69,7 @@ pipeline {
         stage('SCA - Trivy (File System)') {
             steps {
                 sh '''                
-                sudo docker run --rm \
+                docker run --rm \
                     -v $(pwd):/app \
                     aquasec/trivy fs /app \
                     --format sarif \
@@ -88,7 +88,7 @@ pipeline {
         stage('Trivy Image Scan') {
             steps {
                 sh '''                              
-                 sudo docker run --rm \
+                 docker run --rm \
                     -v $(pwd):/app \
                     -v /var/run/docker.sock:/var/run/docker.sock \
                     -v "$HOME/.docker":/root/.docker \
