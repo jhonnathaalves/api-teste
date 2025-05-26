@@ -10,7 +10,16 @@ pipeline {
         DOCKER_IMAGE = "api-devops:${BUILD_NUMBER}"
     }
 
+    options {        
+        skipDefaultCheckout()
+    }
+
     stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
         stage('Checkout') {
             steps {
                 checkout scm
@@ -70,7 +79,7 @@ pipeline {
             steps {
                 sh '''                
                 docker run --rm \
-                    -v $(pwd):/app \
+                    -v "$WORKSPACE:/app" \
                     aquasec/trivy fs /app \
                     --format sarif \
                     -o "/app/trivy-report-fs.sarif" \
@@ -89,7 +98,7 @@ pipeline {
             steps {
                 sh '''                              
                  docker run --rm \
-                    -v $(pwd):/app \
+                    -v "$WORKSPACE:/app" \
                     -v /var/run/docker.sock:/var/run/docker.sock \
                     -v "$HOME/.docker":/root/.docker \
                     -e DOCKER_HOST=unix:///var/run/docker.sock \
