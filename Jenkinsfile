@@ -72,9 +72,8 @@ pipeline {
                 docker run --rm \
                     -v $(pwd):/app \
                     aquasec/trivy fs /app \
-                    --format template \
-                    --template "@contrib/html.tpl" \
-                    -o /app/trivy-report-fs.html \
+                    --format sarif \
+                    -o /app/trivy-report-fs.sarif \
                     --exit-code 0 --severity HIGH,CRITICAL
                 '''
             }
@@ -96,7 +95,6 @@ pipeline {
                     -e DOCKER_HOST=unix:///var/run/docker.sock \
                     aquasec/trivy image \
                     --format sarif \
-                    # --template "@contrib/html.tpl" \
                     -o /app/trivy-report-image.sarif \
                     --exit-code 0 --severity HIGH,CRITICAL \
                     "$DOCKER_IMAGE"
