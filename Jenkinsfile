@@ -78,13 +78,13 @@ pipeline {
         stage('SCA - Trivy (File System)') {
             steps {
                 sh '''                
-                docker run --rm \
-                    --user 0 \ 
-                    -v "$WORKSPACE:/app" \
-                    aquasec/trivy fs /app \
-                    --format sarif \
-                    -o "/app/trivy-report-fs.sarif" \
-                    --exit-code 0 --severity HIGH,CRITICAL
+                    docker run --rm \
+                        --user 0 \
+                        -v "$WORKSPACE:/app" \
+                        aquasec/trivy fs /app \
+                        --format sarif \
+                        -o "/app/trivy-report-fs.sarif" \
+                        --exit-code 0 --severity HIGH,CRITICAL
                 '''
             }
         }
