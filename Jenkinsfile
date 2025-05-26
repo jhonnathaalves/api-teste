@@ -66,19 +66,19 @@ pipeline {
             }
         }
 
-        stage('Convert SARIF to HTML') {
-            steps {
-                sh '''
-                docker run --rm -v $(pwd):/workdir sarif-html:latest \
-                    /workdir/semgrep.sarif \
-                    /workdir/semgrep-report.html
+        #stage('Convert SARIF to HTML') {
+        #    steps {
+        #        sh '''
+        #        docker run --rm -v $(pwd):/workdir sarif-html:latest \
+        #            /workdir/semgrep.sarif \
+        #            /workdir/semgrep-report.html
 
-                docker run --rm -v $(pwd):/workdir sarif-html:latest \
-                    /workdir/gitleaks.sarif \
-                    /workdir/gitleaks-report.html
-                '''
-            }
-        }
+        #        docker run --rm -v $(pwd):/workdir sarif-html:latest \
+        #            /workdir/gitleaks.sarif \
+        #            /workdir/gitleaks-report.html
+        #        '''
+        #    }
+        #}
 
         stage('SCA - Trivy (File System)') {
             steps {
@@ -109,9 +109,9 @@ pipeline {
                     -v "$HOME/.docker":/root/.docker \
                     -e DOCKER_HOST=unix:///var/run/docker.sock \
                     aquasec/trivy image \
-                    --format template \
-                    --template "@contrib/html.tpl" \
-                    -o /app/trivy-report-image.html \
+                    --format sarif \
+                    # --template "@contrib/html.tpl" \
+                    -o /app/trivy-report-image.sarif \
                     --exit-code 0 --severity HIGH,CRITICAL \
                     "$DOCKER_IMAGE"
                 '''
@@ -123,12 +123,25 @@ pipeline {
                 waitForQualityGate abortPipeline: true
             }
         }
+        stage('Publish SARIF Findings') {
+            steps {
+              recordIssues(
+                enabledForFailure: true,
+                tools: [
+                  sarif(pattern: 'semgrep.sarif'),
+                  sarif(pattern: 'gitleaks.sarif'),
+                  sarif(pattern: 'trivy-report-image.sarif')
+                ]
+              )
+            }
+        }
     }
 
     post {
         always {
             junit '**/target/surefire-reports/*.xml'
             archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
+            archiveArtifacts artifacts: '*.sarif', allowEmptyArchive: true
             archiveArtifacts artifacts: '*.html', allowEmptyArchive: true
         }
 
