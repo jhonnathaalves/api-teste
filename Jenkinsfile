@@ -101,7 +101,7 @@ pipeline {
                 curl -sSL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl -o html.tpl
                 trivy image \
                     --format template \
-                    --template "@contrib/html.tpl" \
+                    --template /app/html.tpl \
                     -o trivy-image-report.html \
                     "$DOCKER_IMAGE"
                 '''
