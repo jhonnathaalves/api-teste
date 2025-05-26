@@ -69,11 +69,12 @@ pipeline {
         stage('SCA - Trivy (File System)') {
             steps {
                 sh '''
+                mkdir -p trivy-reports
                 docker run --rm \
                     -v $(pwd):/app \
                     aquasec/trivy fs /app \
                     --format sarif \
-                    -o /app/trivy-report-fs.sarif \
+                    -o /app/trivy-reports/trivy-report-fs.sarif
                     --exit-code 0 --severity HIGH,CRITICAL
                 '''
             }
@@ -87,7 +88,8 @@ pipeline {
 
         stage('Trivy Image Scan') {
             steps {
-                sh '''                 
+                sh '''
+                 mkdir -p trivy-reports                 
                  docker run --rm \
                     -v $(pwd):/app \
                     -v /var/run/docker.sock:/var/run/docker.sock \
@@ -96,7 +98,7 @@ pipeline {
                     aquasec/trivy image \
                     --timeout 10m \ 
                     --format sarif \
-                    -o /app/trivy-report-image.sarif \
+                    -o /app/trivy-reports/trivy-report-image.sarif \
                     --exit-code 0 --severity HIGH,CRITICAL \
                     "$DOCKER_IMAGE"
                 '''
@@ -115,8 +117,8 @@ pipeline {
                 tools: [
                   sarif(id: 'semgrep-sarif', name: 'Semgrep Findings', pattern: 'semgrep.sarif'),
                   sarif(id: 'gitleaks-sarif', name: 'Gitleaks Findings', pattern: 'gitleaks.sarif'),
-                  sarif(id: 'trivy-fs-sarif', name: 'Trivy fs Scan', pattern: 'trivy-report-fs.sarif'),
-                  sarif(id: 'trivy-image-sarif', name: 'Trivy Image Scan', pattern: 'trivy-report-image.sarif')                  
+                  sarif(id: 'trivy-fs-sarif', name: 'Trivy fs Scan', pattern: 'trivy-reports/trivy-report-fs.sarif'),
+                  sarif(id: 'trivy-image-sarif', name: 'Trivy Image Scan', pattern: 'trivy-reports/trivy-report-image.sarif')                  
                 ]
               )
             }
