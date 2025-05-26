@@ -105,6 +105,7 @@ pipeline {
                     -v "$HOME/.docker":/root/.docker \
                     -e DOCKER_HOST=unix:///var/run/docker.sock \
                     aquasec/trivy image \
+                    --timeout 5m \
                     --format sarif \
                     -o "/app/trivy-report-image.sarif" \
                     --exit-code 0 --severity HIGH,CRITICAL \
