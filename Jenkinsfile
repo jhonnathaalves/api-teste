@@ -48,6 +48,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'SEMGREP_TOKEN', variable: 'SEMGREP_TOKEN')]) {
                     sh '''
+                    export SEMGREP_APP_TOKEN=$SEMGREP_APP_TOKEN
                     semgrep \
                         --config=p/owasp-top-ten \
                         --sarif --output=semgrep.sarif \
