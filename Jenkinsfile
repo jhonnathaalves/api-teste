@@ -68,8 +68,7 @@ pipeline {
 
         stage('SCA - Trivy (File System)') {
             steps {
-                sh '''
-                mkdir -p trivy-reports
+                sh '''                
                 docker run --rm \
                     -v $(pwd):/app \
                     aquasec/trivy fs /app \
@@ -88,8 +87,7 @@ pipeline {
 
         stage('Trivy Image Scan') {
             steps {
-                sh '''
-                 mkdir -p trivy-reports                 
+                sh '''                              
                  docker run --rm \
                     -v $(pwd):/app \
                     -v /var/run/docker.sock:/var/run/docker.sock \
