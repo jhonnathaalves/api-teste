@@ -102,13 +102,7 @@ pipeline {
 
         stage('Trivy Image Scan') {
             steps {
-                sh '''
-                 docker save -o api-devops.tar $DOCKER_IMAGE
-
-                 chmod 777 api-devops.tar
-
-                 ls -lh api-devops.tar
-
+                sh '''                 
                  docker run --rm \
                     -v $(pwd):/app \
                     -v /var/run/docker.sock:/var/run/docker.sock \
