@@ -97,6 +97,12 @@ pipeline {
                     --output trivy-report-image.sarif \
                     --exit-code 0 \
                     --severity HIGH,CRITICAL
+
+                trivy image \
+                    --format template \
+                    --template "@contrib/html.tpl" \
+                    -o trivy-image-report.html \
+                    "$DOCKER_IMAGE"
                 '''
             }
         }
