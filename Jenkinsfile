@@ -112,8 +112,7 @@ pipeline {
                     --format template \
                     --template "@contrib/html.tpl" \
                     -o /app/trivy-report-image.html \
-                    --exit-code 0 --severity HIGH,CRITICAL \
-					$DOCKER_IMAGE
+                    --exit-code 0 --severity HIGH,CRITICAL 
                 '''
             }
         }
