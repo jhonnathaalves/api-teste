@@ -105,6 +105,10 @@ pipeline {
                 sh '''
                  docker save -o api-devops.tar $DOCKER_IMAGE
 
+                 chmod 777 api-devops.tar
+
+                 ls -lh api-devops.tar
+
                  docker run --rm \
                     -v $(pwd):/app \
                     aquasec/trivy image \
