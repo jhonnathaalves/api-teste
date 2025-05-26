@@ -111,6 +111,9 @@ pipeline {
 
                  docker run --rm \
                     -v $(pwd):/app \
+                    -v /var/run/docker.sock:/var/run/docker.sock \
+                    -v "$HOME/.docker":/root/.docker \
+                    -e DOCKER_HOST=unix:///var/run/docker.sock \
                     aquasec/trivy image \
                     --format template \
                     --template "@contrib/html.tpl" \
