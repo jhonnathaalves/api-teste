@@ -73,7 +73,7 @@ pipeline {
                     -v $(pwd):/app \
                     aquasec/trivy fs /app \
                     --format sarif \
-                    -o "/app/trivy-report-fs.sarif"
+                    -o "/app/trivy-report-fs.sarif" \
                     --exit-code 0 --severity HIGH,CRITICAL
                 '''
             }
