@@ -112,11 +112,11 @@ pipeline {
                  docker run --rm \
                     -v $(pwd):/app \
                     aquasec/trivy image \
-                    --input /app/api-devops.tar \
                     --format template \
                     --template "@contrib/html.tpl" \
                     -o /app/trivy-report-image.html \
-                    --exit-code 0 --severity HIGH,CRITICAL 
+                    --exit-code 0 --severity HIGH,CRITICAL \
+                    "$DOCKER_IMAGE"
                 '''
             }
         }
