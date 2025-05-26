@@ -66,20 +66,6 @@ pipeline {
             }
         }
 
-        #stage('Convert SARIF to HTML') {
-        #    steps {
-        #        sh '''
-        #        docker run --rm -v $(pwd):/workdir sarif-html:latest \
-        #            /workdir/semgrep.sarif \
-        #            /workdir/semgrep-report.html
-
-        #        docker run --rm -v $(pwd):/workdir sarif-html:latest \
-        #            /workdir/gitleaks.sarif \
-        #            /workdir/gitleaks-report.html
-        #        '''
-        #    }
-        #}
-
         stage('SCA - Trivy (File System)') {
             steps {
                 sh '''
