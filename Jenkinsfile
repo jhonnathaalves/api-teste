@@ -112,9 +112,10 @@ pipeline {
               recordIssues(
                 enabledForFailure: true,
                 tools: [
-                  sarif(pattern: 'semgrep.sarif'),
-                  sarif(pattern: 'gitleaks.sarif'),
-                  sarif(pattern: 'trivy-report-image.sarif')
+                  sarif(id: 'semgrep-sarif', name: 'Semgrep Findings', pattern: 'semgrep.sarif'),
+                  sarif(id: 'gitleaks-sarif', name: 'Gitleaks Findings', pattern: 'gitleaks.sarif'),
+                  sarif(id: 'trivy-fs-sarif', name: 'Trivy fs Scan', pattern: 'trivy-report-fs.sarif'),
+                  sarif(id: 'trivy-image-sarif', name: 'Trivy Image Scan', pattern: 'trivy-report-image.sarif')                  
                 ]
               )
             }
