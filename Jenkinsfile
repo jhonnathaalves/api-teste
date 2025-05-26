@@ -80,7 +80,7 @@ pipeline {
                 sh '''                
                 docker run --rm \
                     -u $(id -u):$(id -g) \
-                    -v "$WORKSPACE:/app" \
+                    -v "$WORKSPACE:/app" -d \
                     aquasec/trivy fs /app \
                     --format sarif \
                     -o "/app/trivy-report-fs.sarif" \
@@ -100,7 +100,7 @@ pipeline {
                 sh '''                              
                  docker run --rm \
                     -u $(id -u):$(id -g) \
-                    -v "$WORKSPACE:/app" \
+                    -v "$WORKSPACE:/app" -d \
                     -v /var/run/docker.sock:/var/run/docker.sock \
                     -v "$HOME/.docker":/root/.docker \
                     -e DOCKER_HOST=unix:///var/run/docker.sock \
