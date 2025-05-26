@@ -79,7 +79,7 @@ pipeline {
             steps {
                 sh '''                
                 docker run --rm \
-                    -u $(id -u):$(id -g) \
+                    --user 0 \ 
                     -v "$WORKSPACE:/app" -d \
                     aquasec/trivy fs /app \
                     --format sarif \
@@ -99,7 +99,7 @@ pipeline {
             steps {
                 sh '''                              
                  docker run --rm \
-                    -u $(id -u):$(id -g) \
+                    --user 0 \
                     -v "$WORKSPACE:/app" -d \
                     -v /var/run/docker.sock:/var/run/docker.sock \
                     -v "$HOME/.docker":/root/.docker \
